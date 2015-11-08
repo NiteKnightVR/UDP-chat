@@ -6,18 +6,18 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-    DatagramSocket socket;
+    DatagramSocket socket;      //initialize
     InetAddress IPAddress;
     private static boolean on = true;
-    private int seqNumber = 0;
+    private int seqNumber = 0;  //start at 0
     public Client() {
 
     }
 
     public void createAndListenSocket(String address) {
         try {
-            socket = new DatagramSocket();
-            IPAddress = InetAddress.getByName(address);
+            socket = new DatagramSocket();  //create new socket
+            IPAddress = InetAddress.getByName(address); //set address
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -26,36 +26,36 @@ public class Client {
         }
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message) {   //send the String message
         try {
-            socket.setSoTimeout(5000);
+            socket.setSoTimeout(5000);  //set timeout to 5 seconds
         } catch (SocketException e) {
             System.out.println("Error setting timeout" + e);
         }
 
         try {
 
-            byte[] incomingData = new byte[1024];
-            message = "DATA " + seqNumber + " " + message + " \n";
-            byte[] data = message.getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, 7777);
-            socket.send(sendPacket);
+            byte[] incomingData = new byte[1024];   //reserve space for incoming ACK
+            message = "DATA " + seqNumber + " " + message + " \n";  //create message to send
+            byte[] data = message.getBytes();   //convert to bytes
+            DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, 7777); //convert to packet
+            socket.send(sendPacket);    //send the packet
 
-            DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
+            DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);  //get ACK back from Server
             socket.receive(incomingPacket);
-            String response = new String(incomingPacket.getData());
+            String response = new String(incomingPacket.getData()); //convert to string
 
-            String delims = "[ ]+";
-            String[] check = response.split(delims);
+            String delims = "[ ]+"; //set delims
+            String[] check = response.split(delims);    //split ACK into ACK and sequence number
 
-            if (check[0].equals("ACK")) {
-                if (Integer.parseInt(check[1]) == seqNumber) {
+            if (check[0].equals("ACK")) {   //check for ACK tag
+                if (Integer.parseInt(check[1]) == seqNumber) {  //check seq. number
                     seqNumber++;
                 }
             }
 
         }catch (SocketTimeoutException e) {
-            System.out.println("Timed out, resending");
+            System.out.println("Timed out, resending"); //if timeout, print, and resend
             sendMessage(message);
         } catch (SocketException e) {
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class Client {
         Client client = new Client();
         client.createAndListenSocket(args[0]);
 
-        while(on)
+        while(on)   //get input and send, can use ctrl + c to end;
         {
             Scanner s= new Scanner(System.in);
             String x = s.next();
